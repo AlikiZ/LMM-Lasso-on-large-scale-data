@@ -62,39 +62,31 @@ def run(mSamples, everynthFeatures, dataset,inpycharm):
     test_idx = np.asarray(range(n_train, X.shape[0]))
 
     # train LMM-Lasso with and w/o screening rules,
-    res = lmm_lasso.train(X[train_idx], y[train_idx], name, inpycharm, debug=debug)
+    res = lmm_lasso.train(X[train_idx], y[train_idx], X[test_idx], name, inpycharm, debug=debug)
 
     w = res['weights']
     w_ada = res['weights_of_adascreen']
     lambda_path = res['lambda_path']
     nz_inds_lasso = res['non-zero indeces lasso']
     nz_inds = res['non-zero indeces ada']
+    yhat = res['mean_lasso']
+    y_ada = res['mean_ada']
 
-    # train baseline comparison with standard lasso
+    # train baseline model with standard lasso
     res_baseline = baseline_comparison.trainlasso(X[train_idx], X[test_idx], y[train_idx], lambda_path)
     res_baseline['predictors'] = np.reshape(res_baseline['predictors'], (res_baseline['predictors'].shape[0], res_baseline['predictors'].shape[1]))
+    nz_inds_baseline = list(map(lambda x: (x != 0).sum(), res_baseline['weights']))
 
     name.features(dataset, res['screening_rule'], os.path.dirname(os.path.dirname(os.path.dirname(os.getcwd()))))
 
-    #predict
-    K_tt = 1. / n_f * SP.dot(X[train_idx, :], X[train_idx, :].T)
-    K_vt = 1. / n_f * SP.dot(X[test_idx, :], X[train_idx, :].T)
-    ldelta0 = res['ldelta0']
-    yhat = np.asarray([lmm_lasso.predict(y[train_idx], X[train_idx, :], X[test_idx, :], ldelta0, K_tt, K_vt, w[:, i]) for i in range(w.shape[1])])
-    y_ada = np.asarray([lmm_lasso.predict(y[train_idx], X[train_idx, :], X[test_idx, :], ldelta0, K_tt, K_vt, w_ada[:, i]) for i in range(w_ada.shape[1])])
-    corr = np.asarray([SP.stats.pearsonr(yhat[i], y[test_idx])[0] for i in range(y_ada.shape[0])]).flatten()
+    #evaluation metrics
     corr_ada = np.asarray([SP.stats.pearsonr(y_ada[i], y[test_idx])[0] for i in range(y_ada.shape[0])]).flatten()
-
+    corr = np.asarray([SP.stats.pearsonr(yhat[i], y[test_idx])[0] for i in range(yhat.shape[0])]).flatten()
     corr_baseline = np.asarray([SP.stats.pearsonr(res_baseline['predictors'][i,:], y[test_idx].flatten())[0] for i in range(lambda_path.shape[0])])
-    #corr = np.asarray([SP.stats.pearsonr(res['mean_lasso'][i,:], y[test_idx].flatten())[0] for i in range(lambda_path.shape[0])]).flatten()
-    #corr_ada = np.asarray([SP.stats.pearsonr(res['mean_ada'][i,:], y[test_idx].flatten())[0] for i in range(lambda_path.shape[0])]).flatten()
-    #ms_error = np.asarray([mse(res['mean_lasso'][i,:], y[test_idx].flatten()) for i in range(lambda_path.shape[0])])
-    #ms_error_ada = np.asarray([mse(res['mean_ada'][i,:], y[test_idx].flatten()) for i in range(lambda_path.shape[0])])
     ms_error_baseline = np.asarray([mse(res_baseline['predictors'][i,:], y[test_idx].flatten()) for i in range(lambda_path.shape[0])])
     ms_error_ada = np.asarray([mse(y_ada[i].flatten(), y[test_idx].flatten()) for i in range(lambda_path.shape[0])])
-    ms_error = np.asarray([mse(y_ada[i].flatten(), y[test_idx].flatten()) for i in range(lambda_path.shape[0])])
+    ms_error = np.asarray([mse(yhat[i].flatten(), y[test_idx].flatten()) for i in range(lambda_path.shape[0])])
 
-    nz_inds_baseline = list(map(lambda x: (x != 0).sum(), res_baseline['weights']))
     maxidx = np.argmax(corr_ada)
     print('... corr(Yhat,Ytrue):{0} for the lambda value {1}'.format(corr[maxidx], lambda_path[maxidx]))
     print('... corr(Yhat,Ytrue): %.2f (in percent)' % (corr[maxidx]))

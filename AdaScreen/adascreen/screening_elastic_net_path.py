@@ -95,7 +95,10 @@ class ScreeningElasticNetPath(object):
         lmax, lmax_ind, lmax_x = self.calc_lambda_max(X, y)
         path, alt_path = self.get_plain_path() #* lmax
         #define as a path the alternativ path with more values > lmax and closer around lmax
-        path = alt_path * lmax    #could be path = path * lamx
+        path = path * lmax  #could be path = path * lamx
+        # add two lines in order to make the path shorter
+        index = [1,3,5,7,9]
+        #path = np.delete(path, index)
         # screening args
         normy = np.linalg.norm(y)
         normX = np.linalg.norm(X, axis=1)

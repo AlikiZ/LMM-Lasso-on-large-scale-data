@@ -1,10 +1,7 @@
 """
 lmm_lasso.py
 
-Author:		Barbara Rakitsch
-Year:		2012
-Group:		Machine Learning and Computational Biology Group (http://webdav.tuebingen.mpg.de/u/karsten/group/)
-Institutes:	Max Planck Institute for Developmental Biology and Max Planck Institute for Intelligent Systems (72076 Tuebingen, Germany)
+by Aliki Zavaropoulou 
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -58,8 +55,8 @@ from plots import plot_speedup
 #import primme
 
 
-def train(X,y, name, inpycharm, numintervals=100,ldeltamin=-5,ldeltamax=5,rho=1,alpha=1,debug=False):
-    """ K
+def train(X,y,Xtest, name, inpycharm, numintervals=100,ldeltamin=-5,ldeltamax=5,rho=1,alpha=1,debug=False):
+    """
     train linear mixed model lasso
 
     Input:
@@ -107,13 +104,8 @@ def train(X,y, name, inpycharm, numintervals=100,ldeltamin=-5,ldeltamax=5,rho=1,
     nzlasso = np.asarray([p[2] for p in paok])
 
     # calculate the mean of the Gaussian predictive distribution
-    Ktt_hat = 1. / n_f * SP.dot(SUX, SUX.T)
-    Ktt_hat = SP.dot(SUX.T, np.linalg.inv(Ktt_hat + delta0 * np.identity(Ktt_hat.shape[0])))
-    mean_ada = np.asarray([predict_mean(Ktt_hat, SUy - SP.dot(SUX, np.reshape(beta[:, i], (beta.shape[0], 1))), beta[:, i], Xtest) for i in range(beta.shape[1])])
-    mean_lasso = np.asarray([predict_mean(Ktt_hat, SUy - SP.dot(SUX, np.reshape(weights[:, i], (weights.shape[0],1) )), weights[:, i], Xtest) for i in range(weights.shape[1])] )
-    
-    #def predict_phenotype(SUX, n_f, delta0, SUy, beta, Xtest, weights):
-    #    return mean_ada, mean_lasso
+    mean_ada, mean_lasso = predict_phenotype(SUX, n_f, delta0, SUy, beta, Xtest, weights)
+
 
     plot_speedup(SUX, time_lasso, name, lmax, solver, inpycharm, screening_rules=screening_rule, path=path, times_solver=times_solver)
 
@@ -152,6 +144,14 @@ def train_lasso_sklearn(X,y,mu, zero_threshold=1E-3):
     totaltime = time.time() - startTime
     nonzero = (model.coef_ != 0).sum()
     return model.coef_, totaltime, nonzero
+
+
+def predict_phenotype(SUX, n_f, delta0, SUy, beta, Xtest, weights):
+    Ktt_hat = 1. / n_f * SP.dot(SUX, SUX.T)
+    Ktt_hat = SP.dot(SUX.T, np.linalg.inv(Ktt_hat + delta0 * np.identity(Ktt_hat.shape[0])))
+    mean_ada = np.asarray([predict_mean(Ktt_hat, SUy - SP.dot(SUX, np.reshape(beta[:, i], (beta.shape[0], 1))), beta[:, i], Xtest) for i in range(beta.shape[1])])
+    mean_lasso = np.asarray([predict_mean(Ktt_hat, SUy - SP.dot(SUX, np.reshape(weights[:, i], (weights.shape[0],1) )), weights[:, i], Xtest) for i in range(weights.shape[1])] )
+    return mean_ada, mean_lasso
 
 
 def lasso_objective(y, x, weights, mu):
