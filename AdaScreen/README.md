@@ -1,3 +1,5 @@
+Some parts of the AdaScreen software are slightly modified to better be incoroporated in the LMM-Lasso algorithm. The following text as in the release of AdaScreen gives an overview of the way AdaScreen contributes to a faster solution of the LMM-Lasso.
+
 ### NEWS
 - Wiki can be found [here](https://github.com/nicococo/AdaScreen/wiki)
 - Bug-tracking can be found [here](https://github.com/nicococo/AdaScreen/issues)
