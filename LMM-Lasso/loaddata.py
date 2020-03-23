@@ -27,8 +27,8 @@ def loadSnps(samples, everynthfeature, path = '/home/aliki/uni/moredata/data_ukb
 
 
 def loadukb_server(samples, everynthfeature, chromosome_path = 'ukb_chr22_v2.bed'):
-    chromosome_path = ['/mnt/30T/ukbiobank/original/genetics/microarray/unzipped/' + file for file in chromosome_path]
-    csvdata = pd.read_csv(os.path.abspath(os.path.dirname(os.path.dirname(os.path.dirname(os.getcwd())))) + '/moredata/data_ukb/clean_standingheight.csv', index_col=0)
+    chromosome_path = ['/mnt/30T/data/ukbiobank/original/genetics/microarray/unzipped/' + file for file in chromosome_path]
+    csvdata = pd.read_csv('/mnt/30T/data/ukbiobank/derived/projects/LMM-Lasso' + '/clean_standingheight.csv', index_col=0)
     csvdata.columns = [ 'standingheight']
     starttime = time.time()
     # loading with pysnptools
@@ -37,17 +37,22 @@ def loadukb_server(samples, everynthfeature, chromosome_path = 'ukb_chr22_v2.bed
     for path in chromosome_path[1:]:
         Xi = pd.concat([Xi, loadSnps(samples, everynthfeature, path+'.bed')], axis=1, copy=False)
         print path, Xi.shape 
-    #make the index a numeric value    
+    # make the index a numeric value
     Xi.set_index(pd.Series(Xi.index.values.astype(int)), inplace=True)
     endload = time.time()
     print 'time of loading with pysnptools', endload - starttime
-    # filter for MAF
-    marker_MAF3 = np.asarray(pd.read_csv("/mnt/30T/aliki" + "/marker_MAF3.csv", header=None, dtype = int, squeeze=True))
+    # filter for MAF - not needed in case a QC was already performed
+    #marker_MAF3 = np.asarray(pd.read_csv("/mnt/30T/aliki" + "/marker_MAF3.csv", header=None, dtype = int, squeeze=True))
+    """
+    marker_MAF3, marker_MAF1 = filterMAF(Xi)
     Xi = Xi.drop(columns=Xi.columns[marker_MAF3])
+    """
+    # make sure to use the genotype-phenotype info for the same person
     commonindeces = list(set(Xi.index.values).intersection(set(csvdata.index.values)))
     Xi = Xi.iloc[Xi.index.isin(commonindeces), :].sort_index()
     csvdata = csvdata.iloc[csvdata.index.isin(commonindeces), :].sort_index()
     print set(Xi.index.values == csvdata.index.values)
+    # standardize the SNP values column-wise
     Xi = SNP_standard(Xi.values)
     print 'time of transforming design matrix X', time.time() - endload
     name = naming()
@@ -58,14 +63,15 @@ def loadukb_server(samples, everynthfeature, chromosome_path = 'ukb_chr22_v2.bed
     return Xi, y, name
 
 
+"""  helper functions, none of the following is used when a QC is already done   """
 
 def loadukb_local(samples, features, chromosome_path = 'ukb_chr22_v2.bed'):
     #here the IDs of X and y are not overlapping
     csvdata = pd.read_csv(os.path.abspath(
-        os.path.dirname(os.path.dirname(os.path.dirname(os.getcwd())))) + '/moredata/data_ukb/clean_standingheight.csv', index_col=0)
+        os.path.dirname(os.path.dirname(os.path.dirname(os.getcwd())))) + '/uni/moredata/data_ukb/clean_standingheight.csv', index_col=0)
     csvdata.columns = [ 'standingheight']
     chromosome_path = [
-        os.path.abspath(os.path.dirname(os.path.dirname(os.path.dirname(os.getcwd())))) + '/moredata/data_ukb/' + file
+        os.path.abspath(os.path.dirname(os.path.dirname(os.path.dirname(os.getcwd())))) + '/uni/moredata/data_ukb/' + file
         for file in chromosome_path]
     """     that is another way to read in the data
     Xi = read_genomic_data(chromosome_path[0], samples)
@@ -158,3 +164,4 @@ def filterMAF(Xi):
             marker_MAF3.append(i)
             if float(leastFrequent(np.asarray(Xi.iloc[:, i]))) / float(Xi.shape[1]) < 0.01:
                 marker_MAF1.append(i)
+    return marker_MAF3, marker_MAF1

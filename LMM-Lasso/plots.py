@@ -6,7 +6,34 @@ import numpy as np
 from matplotlib.backends.backend_pdf import PdfPages
 
 
-def along_lambdapath(inpycharm, name, lambda_path, corr_ada, corr, corr_baseline, lmax, ms_error, ms_error_ada, ms_error_baseline, nz_inds, nz_inds_admm, nz_inds_baseline, number_screened_feat):
+def along_lambdapath(lambda_path, corr_ada, lmax, ms_error_ada, path):
+    # , nz_inds, nz_inds_admm
+    pp = PdfPages(path + '/moreplots/' + name.dataset + str(name.screening_rule) + name.phenotype + '.pdf')
+    # plot path vs correlation
+    plt.plot(lambda_path, corr_ada, 'bs', label="with screening")
+    plt.legend(loc='upper right', borderaxespad=0.)
+    plt.axis([0, max(lambda_path) * 1.2, 0, 1.2])
+    plt.vlines(lmax, 0, 1.2, colors='k', linestyles='dashed')
+    plt.title('Pearson correlation')
+    plt.xlabel('lambda path')
+    plt.ylabel('correlation')
+    pp.savefig()
+    plt.close()
+
+    # plot path vs mse
+    plt.plot(lambda_path, ms_error_ada, 'bs', label="with screening")
+    plt.legend(loc='upper right', borderaxespad=0.)
+    plt.axis([0, max(lambda_path) * 1.2, 0, max(ms_error_ada) * 1.1])
+    plt.vlines(lmax, 0, max(ms_error_ada) * 1.1, colors='k', linestyles='dashed')
+    plt.title('mean squared error ')
+    plt.xlabel('lambda path')
+    plt.ylabel('MSE')
+    pp.savefig()
+    plt.close()
+    pp.close()
+
+
+def along_lambdapath_compare(inpycharm, name, lambda_path, corr_ada, corr, corr_baseline, lmax, ms_error, ms_error_ada, ms_error_baseline, nz_inds, nz_inds_admm, nz_inds_baseline, number_screened_feat):
     # y_test_idx, yhat_maxidx, maxidx, y_ada, baseline_predictors_maxidx,
     if inpycharm == True:
         pp = PdfPages(
