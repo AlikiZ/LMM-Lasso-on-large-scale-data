@@ -3,7 +3,6 @@ import matplotlib
 matplotlib.use('Agg')
 import csv
 import scipy as SP
-import pdb
 import lmm_lasso
 import loaddata
 import baseline_comparison
@@ -16,9 +15,8 @@ from namesforplotting import naming
 import time
 import argparse
 import sys
-import resource
 import plots
-import faulthandler; faulthandler.enable()
+
 
 
 

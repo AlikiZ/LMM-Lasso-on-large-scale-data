@@ -3,18 +3,6 @@ lmm_lasso.py
 
 by Aliki Zavaropoulou
 
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <http://www.gnu.org/licenses/>.
 modified version of the script of Barbara Rakitsch
 """
 import matplotlib
@@ -22,7 +10,6 @@ matplotlib.use('Agg')
 import scipy as SP
 import scipy.linalg as LA
 import scipy.optimize as OPT
-import pdb
 import matplotlib.pyplot as plt
 #plt.switch_backend('agg')
 import time
@@ -33,8 +20,7 @@ from pysnptools.snpreader import Bed       #directly reading BED file without cs
 #libraries from adascreen
 import sys
 import os
-#sys.path.append(os.path.abspath(os.path.dirname(os.path.dirname(os.getcwd())) + 'LMM-Lasso-on-large-scale-data/AdaScreen'))
-sys.path.append(os.path.abspath(os.path.dirname(os.path.dirname(os.getcwd())) + '/AdaScreen'))
+sys.path.append(os.path.abspath(os.path.dirname(os.getcwd()) + '/AdaScreen'))
 
 #from clustermap import Job, process_jobs
 import adascreen.solver #as solver

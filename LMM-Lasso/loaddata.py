@@ -4,7 +4,7 @@ import os
 import numpy as np
 from namesforplotting import naming
 from lmm_lasso import SNP_standard
-from read_genetics import read_genomic_data
+#from read_genetics import read_genomic_data
 import time
 from lmm_lasso import leastFrequent
 
